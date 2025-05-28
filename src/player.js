@@ -1,6 +1,6 @@
 class Player {
   static initialize () {
-    this.keyStatus = {right: false, left: false, up: false, down: false};
+    this.keyStatus = {right: false, left: false, up: false, down: false, space: false, x: false, z: false};
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
     this.touchPoint = {sx: 0, sy: 0, ex: 0, ey: 0};
@@ -18,6 +18,12 @@ class Player {
       Player.keyStatus.right = true;
     } else if (e.code == "ArrowDown") {
       Player.keyStatus.down = true;
+    } else if (e.code == "Space") {
+      Player.keyStatus.space = true;
+    } else if (e.code == "KeyX") {
+      Player.keyStatus.x = true;
+    } else if (e.code == "KeyZ") {
+      Player.keyStatus.z = true;
     }
     return false;
   }
@@ -31,6 +37,12 @@ class Player {
       Player.keyStatus.right = false;
     } else if (e.code == "ArrowDown") {
       Player.keyStatus.down = false;
+    } else if (e.code == "Space") {
+      Player.keyStatus.space = false;
+    } else if (e.code == "KeyX") {
+      Player.keyStatus.x = false;
+    } else if (e.code == "KeyZ") {
+      Player.keyStatus.z = false;
     }
     return false;
   }
@@ -39,33 +51,34 @@ class Player {
     Player.touchPoint.sy = e.touches[0].clientY;
   }
   static touchMoveEvent(e) {
-    if (Math.abs(e.touches[0].clientX - Player.touchPoint.sx) < 20 &&
-        Math.abs(e.touches[0].clientY - Player.touchPoint.sy) < 20
-    ) {
-      return
-    }
-    Player.touchPoint.ex = e.touches[0].clientX
-    Player.touchPoint.ey = e.touches[0].clientY
-    let horizonDirection = Player.touchPoint.ex - Player.touchPoint.sx;
-    let verticalDirection = Player.touchPoint.ey - Player.touchPoint.sy;
-    if (Math.abs(horizonDirection) < Math.abs(verticalDirection)) {
-      if (verticalDirection < 0) {
-        Player.keyStatus = {right: false, left: false, up: true, down: false};
+    let dx = e.touches[0].clientX - Player.touchPoint.sx;
+    let dy = e.touches[0].clientY - Player.touchPoint.sy;
+    let absdx = Math.abs(dx);
+    let absdy = Math.abs(dy);
+    if (absdx > 20 || absdy > 20) {
+      Player.touchPoint.ex = e.touches[0].clientX
+      Player.touchPoint.ey = e.touches[0].clientY
+      let horizonDirection = Player.touchPoint.ex - Player.touchPoint.sx;
+      let verticalDirection = Player.touchPoint.ey - Player.touchPoint.sy;
+      if (Math.abs(horizonDirection) < Math.abs(verticalDirection)) {
+        if (verticalDirection < 0) {
+          Player.keyStatus = {right: false, left: false, up: true, down: false, space: false, x: false, z: false};
+        } else {
+          Player.keyStatus = {right: false, left: false, up: false, down: true, space: false, x: false, z: false};
+        }
       } else {
-        Player.keyStatus = {right: false, left: false, up: false, down: true};
+        if (horizonDirection < 0) {
+          Player.keyStatus = {right: false, left: true, up: false, down: false, space: false, x: false, z: false};
+        } else {
+          Player.keyStatus = {right: true, left: false, up: false, down: false, space: false, x: false, z: false};
+        }
       }
-    } else {
-      if (horizonDirection < 0) {
-        Player.keyStatus = {right: false, left: true, up: false, down: false};
-      } else {
-        Player.keyStatus = {right: true, left: false, up: false, down: false};
-      }
+      Player.touchPoint.sx = Player.touchPoint.ex;
+      Player.touchPoint.sy = Player.touchPoint.ey;
     }
-    Player.touchPoint.sx = Player.touchPoint.ex;
-    Player.touchPoint.sy = Player.touchPoint.ey;
   }
   static touchEndEvent(e) {
-    Player.keyStatus = {right: false, left: false, up: false, down: false};
+    Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, x: false, z: false};
   }
   static createNewPuyo () {
     if (Stage.board[0][2]) {
@@ -99,7 +112,11 @@ class Player {
     let y = this.puyoStatus.y;
     let dx = this.puyoStatus.dx;
     let dy = this.puyoStatus.dy;
-    if (y + 1 >= Config.stageRows || Stage.board[y + 1][x] || (y + dy + 1 >= 0 && (y + dy + 1 >= Config.stageRows || Stage.board[y + dy + 1][x + dx]))) {
+    if (y + 1 >= Config.stageRows) {
+      isBlocked = true;
+    } else if (Stage.board[y + 1][x]) {
+      isBlocked = true;
+    } else if (y + dy + 1 >= 0 && (y + dy + 1 >= Config.stageRows || Stage.board[y + dy + 1][x + dx])) {
       isBlocked = true;
     }
     if (!isBlocked) {
@@ -112,7 +129,11 @@ class Player {
           Score.addScore(1);
         }
         y = this.puyoStatus.y = y + 1;
-        if (y + 1 >= Config.stageRows || Stage.board[y + 1][x] || (y + dy + 1 >= 0 && (y + dy + 1 >= Config.stageRows || Stage.board[y + dy + 1][x + dx]))) {
+        if (y + 1 >= Config.stageRows) {
+          isBlocked = true;
+        } else if (Stage.board[y + 1][x]) {
+          isBlocked = true;
+        } else if (y + dy + 1 >= 0 && (y + dy + 1 >= Config.stageRows || Stage.board[y + dy + 1][x + dx])) {
           isBlocked = true;
         }
         if (!isBlocked) {
@@ -150,17 +171,17 @@ class Player {
       let mx = x + this.puyoStatus.dx;
       let my = y + this.puyoStatus.dy;
       let canMove = true;
-      if ((y < 0 || x + cx < 0 || x + cx >= Config.stageCols || Stage.board[y][x + cx]) && y >= 0) {
+      if (y >= 0 && (x + cx < 0 || x + cx >= Config.stageCols || Stage.board[y][x + cx])) {
         canMove = false;
       }
-      if ((my < 0 || mx + cx < 0 || mx + cx >= Config.stageCols || Stage.board[my][mx + cx]) && my >= 0) {
+      if (my >= 0 && (mx + cx < 0 || mx + cx >= Config.stageCols || Stage.board[my][mx + cx])) {
         canMove = false;
       }
       if (this.groundFrame === 0) {
-        if ((y + 1 < 0 || x + cx < 0 || x + cx >= Config.stageCols || Stage.board[y + 1][x + cx]) && y + 1 >= 0) {
+        if (y + 1 >= 0 && (x + cx < 0 || x + cx >= Config.stageCols || Stage.board[y + 1][x + cx])) {
           canMove = false;
         }
-        if ((my + 1 < 0 || mx + cx < 0 || mx + cx >= Config.stageCols || Stage.board[my + 1][mx + cx]) && my + 1 >= 0) {
+        if (my + 1 >= 0 && (mx + cx < 0 || mx + cx >= Config.stageCols || Stage.board[my + 1][mx + cx])) {
           canMove = false;
         }
       }
@@ -172,37 +193,45 @@ class Player {
         nextMode = 'moving';
       }
     }
-    if (this.keyStatus.up) {
+    if (this.keyStatus.up || this.keyStatus.x || this.keyStatus.z) {
+      let dx = (this.keyStatus.up)? 1 : (this.keyStatus.x)? -1 : (this.keyStatus.z)? 1 : -1;
       let x = this.puyoStatus.x;
       let y = this.puyoStatus.y;
-      let mx = x + this.puyoStatus.dx;
-      let my = y + this.puyoStatus.dy;
+      let mx = this.puyoStatus.x + this.puyoStatus.dx;
+      let my = this.puyoStatus.y + this.puyoStatus.dy;
       let rotation = this.puyoStatus.rotation;
       let canRotate = true
       let canSwap = false;
       let cx = 0;
       let cy = 0;
-      if (rotation === 90) {
-        if ((y + 1 < 0 || x - 1 < 0 || x - 1 >= Config.stageCols || Stage.board[y + 1][x - 1]) && y + 1 >= 0) {
-            cx = 1;
+      if (rotation === 0) {
+        if (y + 2 >= Config.stageRows || Stage.board[y + 2][x]) {
+          cy = -1;
+        } else if (y + 2 >= Config.stageRows || x - dx < 0 || x - dx >= Config.stageCols || Stage.board[y + 2][x - dx]) {
+          cy = -1;
         }
-        if (cx === 1 && (y + 1 < 0 || x + 1 < 0 || y + 1 >= Config.stageRows || x + 1 >= Config.stageCols || Stage.board[y + 1][x + 1]) && y + 1 >= 0) {
-          canRotate = false;
+      } else if (rotation === 90) {
+        if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
+          if (y + 1 >= Config.stageRows || x + dx < 0 || x + dx >= Config.stageCols || Stage.board[y + 1][x + dx]) {
+            canRotate = false;
+          } else {
+            cx = dx;
+          }
         }
         canSwap = true;
       } else if (rotation === 180) {
-        if ((y + 2 < 0 || y + 2 >= Config.stageRows || Stage.board[y + 2][x]) && y + 2 >= 0) {
+        if (y + 2 >= Config.stageRows || Stage.board[y + 2][x]) {
           cy = -1;
-        }
-        if ((y + 2 < 0 || y + 2 >= Config.stageRows || x - 1 < 0 || Stage.board[y + 2][x - 1]) && y + 2 >= 0) {
+        } else if (y + 2 >= Config.stageRows || x - dx < 0 || x - dx >= Config.stageCols || Stage.board[y + 2][x - dx]) {
           cy = -1;
         }
       } else if (rotation === 270) {
-        if ((y + 1 < 0 || x + 1 < 0 || x + 1 >= Config.stageCols || Stage.board[y + 1][x + 1]) && y + 1 >= 0) {
-          cx = -1;
-        }
-        if (cx === -1 && (y + 1 < 0 || x - 1 < 0 || x - 1 >= Config.stageCols || Stage.board[y + 1][x - 1]) && y + 1 >= 0) {
-          canRotate = false;
+        if (x + dx < 0 || x + dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x + dx]) {
+          if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
+            canRotate = false;
+          } else {
+            cx = -dx;
+          }
         }
         canSwap = true;
       }
@@ -215,12 +244,12 @@ class Player {
           this.puyoStatus.top = this.puyoStatus.y * Config.puyoImgHeight;
         }
         this.actionStartFrame = frame;
-        this.rotateDegree = 90;
+        this.rotateDegree = 90.0 * dx;
         this.rotateBeforeLeft = x * Config.puyoImgWidth;
         this.rotateAfterLeft = (x + cx) * Config.puyoImgWidth;
         this.rotateFromRotation = this.puyoStatus.rotation;
         this.puyoStatus.x = this.puyoStatus.x + cx;
-        let distRotation = (this.puyoStatus.rotation + this.rotateDegree) % 360;
+        let distRotation = (this.puyoStatus.rotation + this.rotateDegree + 360) % 360;
         let dCombi = [[1, 0], [0, -1], [-1, 0], [0, 1]][distRotation / 90];
         this.puyoStatus.dx = dCombi[0];
         this.puyoStatus.dy = dCombi[1];
@@ -264,7 +293,7 @@ class Player {
     this.puyoStatus.rotation = this.rotateFromRotation + ratio * this.rotateDegree;
     this.setPuyoPosition();
     if (ratio === 1) {
-      this.puyoStatus.rotation = (this.rotateFromRotation + this.rotateDegree) % 360;
+      this.puyoStatus.rotation = (this.rotateFromRotation + this.rotateDegree + 360) % 360;
       return false;
     }
     return true;
@@ -290,7 +319,7 @@ class Player {
     this.movablePuyoElement = null;
   }
   static batankyu() {
-    if (this.keyStatus.up) {
+    if (this.keyStatus.space) {
       location.reload()
     }
   }

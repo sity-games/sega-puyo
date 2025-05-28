@@ -45,13 +45,14 @@ class PuyoImage {
   static prepareBatankyu(frame) {
     this.gameOverFrame = frame;
     Stage.stageElement.appendChild(this.batankyuImage);
-    this.batankyuImage.style.top = -this.batankyuImage.height + 'px';
+    this.batankyuImage.style.top = `-${this.batankyuImage.height}px`;
   }
   static batankyu(frame) {
     let ratio = (frame - this.gameOverFrame) / Config.gameOverFrame;
     let x = Math.cos(Math.PI / 2 + ratio * Math.PI * 2 * 10) * Config.puyoImgWidth;
     let y = Math.cos(Math.PI + ratio * Math.PI * 2) * Config.puyoImgHeight * Config.stageRows / 4 + Config.puyoImgHeight * Config.stageRows / 2;
-    this.batankyuImage.style.left = x + 'px';
-    this.batankyuImage.style.top = y + 'px';
+    this.batankyuImage.style.left = `${x}px`;
+    this.batankyuImage.style.top = `${y}px`;
   }
 }
+
