@@ -1,4 +1,5 @@
 let Config = {};
+Config.loadImgInterval = 30;
 Config.puyoImgWidth = 40;
 Config.puyoImgHeight = 40;
 Config.nextPuyosSetCount = 2;

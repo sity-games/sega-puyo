@@ -1,29 +1,30 @@
 class Score {
   static initialize() {
+    this.rensaBonus = [0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672];
+    this.pieceBonus = [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10, 10];
+    this.colorBonus = [0, 0, 3, 6, 12, 24];
     this.fontTemplateList = [];
-    let fontWidth = 0;
-    for(let i = 0; i < 10; i++) {
-      const fontImage = document.getElementById(`font${i}`);
-      if(fontWidth === 0) {
-        fontWidth = fontImage.width / fontImage.height * Config.fontHeight;
-      }
-      fontImage.height = Config.fontHeight;
-      fontImage.width = fontWidth;
-      this.fontTemplateList.push(fontImage);
+    for (let a = 0; a < 10; a++) {
+      this.fontTemplateList.push(new Image());
+      Game.loadImg(`img/${a}.png`, this.fontTemplateList[a], () => {
+        this.fontTemplateList[a].height = Config.fontHeight;
+        this.fontTemplateList[a].width = this.fontTemplateList[a].width / this.fontTemplateList[a].height * Config.fontHeight;
+      });
     }
-    this.fontLength = Math.floor(Config.stageCols * Config.puyoImgWidth / this.fontTemplateList[0].width);
+  }
+  static start() {
+    this.fontLength = Math.floor(Config.stageCols * Config.puyoImgWidth / Score.fontTemplateList[0].width);
     this.score = 0;
     this.showScore();
   }
   static showScore () {
     let score = this.score;
-    const scoreElement = Stage.scoreElement;
-    while(scoreElement.firstChild) {
-      scoreElement.removeChild(scoreElement.firstChild);
+    while (Stage.scoreElement.firstChild) {
+      Stage.scoreElement.removeChild(Stage.scoreElement.firstChild);
     }
-    for(let i = 0; i < this.fontLength; i++) {
-      const number = score % 10;
-      scoreElement.insertBefore(this.fontTemplateList[number].cloneNode(true), scoreElement.firstChild);
+    for (let a = 0; a < this.fontLength; a++) {
+      let number = score % 10;
+      Stage.scoreElement.insertBefore(this.fontTemplateList[number].cloneNode(true), Stage.scoreElement.firstChild);
       score = Math.floor(score / 10);
     }
   }
@@ -32,7 +33,7 @@ class Score {
     piece = Math.min(piece, Score.pieceBonus.length - 1);
     color = Math.min(color, Score.colorBonus.length - 1);
     let scale = Score.rensaBonus[rensa] + Score.pieceBonus[piece] + Score.colorBonus[color];
-    if(scale === 0) {
+    if (scale === 0) {
       scale = 1;
     }
     this.addScore(scale * piece * 10);
@@ -42,6 +43,4 @@ class Score {
     this.showScore();
   }
 };
-Score.rensaBonus = [0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672];
-Score.pieceBonus = [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10, 10];
-Score.colorBonus = [0, 0, 3, 6, 12, 24];
+
