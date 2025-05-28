@@ -19,18 +19,18 @@ class PuyoImage {
     this.nextPuyosSet = [];
     for (let a = 0; a < Config.nextPuyosSetCount; a++) {
       this.nextPuyosSet.push({});
-      this.nextPuyosSet[a].movablePuyo = Math.floor(Math.random() * this.puyoImages.length) + 1;
+      this.nextPuyosSet[a].movablePuyo = Math.floor(Math.random() * Config.puyoColors) + 1;
       this.nextPuyosSet[a].movablePuyoElement = this.getPuyo(this.nextPuyosSet[a].movablePuyo);
-      this.nextPuyosSet[a].centerPuyo = Math.floor(Math.random() * this.puyoImages.length) + 1;
+      this.nextPuyosSet[a].centerPuyo = Math.floor(Math.random() * Config.puyoColors) + 1;
       this.nextPuyosSet[a].centerPuyoElement = this.getPuyo(this.nextPuyosSet[a].centerPuyo);
     }
   }
   static getNextPuyos() {
     let nextPuyos = this.nextPuyosSet.shift();
     this.nextPuyosSet.push({});
-    this.nextPuyosSet[Config.nextPuyosSetCount - 1].movablePuyo = Math.floor(Math.random() * this.puyoImages.length) + 1;
+    this.nextPuyosSet[Config.nextPuyosSetCount - 1].movablePuyo = Math.floor(Math.random() * Config.puyoColors) + 1;
     this.nextPuyosSet[Config.nextPuyosSetCount - 1].movablePuyoElement = this.getPuyo(this.nextPuyosSet[Config.nextPuyosSetCount - 1].movablePuyo);
-    this.nextPuyosSet[Config.nextPuyosSetCount - 1].centerPuyo = Math.floor(Math.random() * this.puyoImages.length) + 1;
+    this.nextPuyosSet[Config.nextPuyosSetCount - 1].centerPuyo = Math.floor(Math.random() * Config.puyoColors) + 1;
     this.nextPuyosSet[Config.nextPuyosSetCount - 1].centerPuyoElement = this.getPuyo(this.nextPuyosSet[Config.nextPuyosSetCount - 1].centerPuyo);
     Stage.showNextPuyos();
     return nextPuyos;
