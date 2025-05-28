@@ -1,6 +1,7 @@
 let Config = {};
 Config.puyoImgWidth = 40;
 Config.puyoImgHeight = 40;
+Config.nextPuyosSetCount = 2;
 Config.fontHeight = 33;
 Config.stageCols = 6;
 Config.stageRows = 12;
@@ -19,3 +20,4 @@ Config.playerMoveFrame = 10;
 Config.playerRotateFrame = 10;
 Config.zenkeshiDuration = 150;
 Config.gameOverFrame = 3000;
+

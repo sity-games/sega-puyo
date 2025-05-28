@@ -16,6 +16,10 @@ class Stage {
     scoreElement.style.top = Config.puyoImgHeight * Config.stageRows + 'px';
     scoreElement.style.width = Config.puyoImgWidth * Config.stageCols + 'px';
     scoreElement.style.height = Config.fontHeight + "px";
+    this.nextPuyosElement = document.getElementById("nextPuyos");
+    this.nextPuyosElement.style.position = 'absolute';
+    this.nextPuyosElement.style.top = '0px';
+    this.nextPuyosElement.style.left = `${(document.body.clientWidth + (Config.puyoImgWidth * Config.stageCols)) / 2}px`
     this.scoreElement = scoreElement;
     this.board = [
       [0, 0, 0, 0, 0, 0],
@@ -46,8 +50,21 @@ class Stage {
     }
     this.puyoCount = puyoCount;
   }
+  static showNextPuyos() {
+    while (this.nextPuyosElement.firstChild) {
+      this.nextPuyosElement.removeChild(this.nextPuyosElement.firstChild);
+    }
+    for (let a = 0; a < Config.nextPuyosSetCount; a++) {
+      this.nextPuyosElement.appendChild(PuyoImage.nextPuyosSet[a].movablePuyoElement);
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.position = 'fixed';
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.top = `${(a * 3 + 0) * Config.puyoImgHeight}px`
+      this.nextPuyosElement.appendChild(PuyoImage.nextPuyosSet[a].centerPuyoElement);
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.position = 'fixed';
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.top = `${(a * 3 + 1) * Config.puyoImgHeight}px`
+    }
+  }
   static setPuyo(x, y, puyo) {
-    const puyoImage = PuyoImage.getPuyo(puyo);
+    let puyoImage = PuyoImage.getPuyo(puyo);
     puyoImage.style.left = x * Config.puyoImgWidth + "px";
     puyoImage.style.top = y * Config.puyoImgHeight + "px";
     this.stageElement.appendChild(puyoImage);
