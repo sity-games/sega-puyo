@@ -1,6 +1,9 @@
 # sega-puyo
 Puyo-Puyo Training Project based on SEGA CHALLENGE! Puyo-Puyo Programming Sample.
 
+# Test play
+Test play is available on https://sity-games.github.io/sega-puyo/index.html
+
 # 『ぷよぷよプログラミング』著作物利用許諾書
 
 ```
