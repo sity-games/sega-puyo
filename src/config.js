@@ -1,5 +1,4 @@
-class Config {
-}
+let Config = {};
 Config.puyoImgWidth = 40;
 Config.puyoImgHeight = 40;
 Config.fontHeight = 33;
