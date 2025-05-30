@@ -19,7 +19,14 @@ class Stage {
     this.nextPuyosElement = document.getElementById("nextPuyos");
     this.nextPuyosElement.style.position = 'absolute';
     this.nextPuyosElement.style.top = '0px';
-    this.nextPuyosElement.style.left = `${(document.body.clientWidth + (Config.puyoImgWidth * Config.stageCols)) / 2}px`
+    this.nextPuyosElement.style.left = `${(window.innerWidth + (Config.puyoImgWidth * Config.stageCols)) / 2.0}px`
+    this.nextPuyosWidth = (document.body.clientWidth - (Config.puyoImgWidth * Config.stageCols)) / 2.0;
+    if (this.nextPuyosWidth > Config.puyoImgWidth) {
+      this.nextPuyosWidth = Config.puyoImgWidth;
+      this.nextPuyosHeight = Config.puyoImgHeight;
+    } else {
+      this.nextPuyosHeight = (this.nextPuyosWidth / Config.puyoImgWidth) * Config.puyoImgHeight;
+    }
     this.board = [];
     this.hiddenBoard = [];
     this.puyoCount = 0;
@@ -39,12 +46,18 @@ class Stage {
     }
     for (let a = 0; a < Config.nextPuyosSetCount; a++) {
       this.nextPuyosElement.appendChild(PuyoImage.nextPuyosSet[a].movablePuyoElement);
-      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.position = 'fixed';
-      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.top = `${(a * 3 + 0) * Config.puyoImgHeight}px`
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.width = this.nextPuyosWidth;
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.height = this.nextPuyosHeight;
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.position = 'sticky';
+      PuyoImage.nextPuyosSet[a].movablePuyoElement.style.top = `${(a * 2.5 + 0.5) * this.nextPuyosHeight}px`
       this.nextPuyosElement.appendChild(PuyoImage.nextPuyosSet[a].centerPuyoElement);
-      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.position = 'fixed';
-      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.top = `${(a * 3 + 1) * Config.puyoImgHeight}px`
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.width = this.nextPuyosWidth;
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.height = this.nextPuyosHeight;
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.position = 'sticky';
+      PuyoImage.nextPuyosSet[a].centerPuyoElement.style.top = `${(a * 2.5 + 1.5) * this.nextPuyosHeight}px`
     }
+    this.nextPuyosElement.style.width = `${this.nextPuyosWidth}px`;
+    this.nextPuyosElement.style.height = `${this.nextPuyosHeight * 5.5}px`;
   }
   static setPuyo(x, y, puyo) {
     let puyoImage = PuyoImage.getPuyo(puyo);

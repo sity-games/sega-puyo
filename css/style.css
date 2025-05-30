@@ -21,4 +21,7 @@ div#nextPuyos {
   margin: 0px;
   overflow: hidden;
   text-align: right;
+  border-radius: 30px;
+  background-color: #005599;
 }
+
