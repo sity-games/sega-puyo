@@ -33,7 +33,10 @@ class Game {
   }
   static loop() {
     if (this.mode == 'start') {
-      if (this.imgQueue.length == 0) {
+      if (this.imgQueue.length > 0) {
+        PuyoImage.nowLoadingImage.style.display = "block";
+      } else {
+        PuyoImage.nowLoadingImage.style.display = "none";
         this.mode = 'checkFall';
         PuyoImage.start();
         Score.start();

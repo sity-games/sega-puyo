@@ -1,5 +1,24 @@
-/**/
-
 body {
-    -webkit-user-select: none; 
+  margin: 0px;
+  -webkit-user-select: none; 
+}
+img#nowLoading {
+  height: 15vh;
+  margin: calc((100vh - 15vh) / 2.0) auto;
+}
+div#stage {
+  position: relative;
+  margin: 0px auto;
+  overflow: hidden;
+  background: url(/sega-puyo/img/puyo_2bg.png);
+}
+div#score {
+  margin: 0px auto;
+  overflow: hidden;
+  text-align: right;
+}
+div#nextPuyos {
+  margin: 0px;
+  overflow: hidden;
+  text-align: right;
 }

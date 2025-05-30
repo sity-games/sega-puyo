@@ -1,5 +1,6 @@
 class PuyoImage {
   static initialize() {
+    this.nowLoadingImage = document.getElementById("nowLoading");
     this.puyoImages = [];
     for (let a = 0; a < 5; a++) {
       this.puyoImages.push(new Image());
