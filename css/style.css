@@ -3,16 +3,42 @@ body {
   -webkit-user-select: none; 
 }
 img#nowLoading {
+  position: absolute;
+  top: 0px;
+  left: 0px;
   height: 15vh;
-  margin: calc((100vh - 15vh) / 2.0) auto;
+  margin: calc((100vh - 15vh) / 2.0) calc((100vw - 49vh) / 2.0);
+  opacity: 0.8;
+}
+img#pause {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 15vh;
+  margin: calc((100vh - 15vh) / 2.0) calc((100vw - 49vh) / 2.0);
+  opacity: 0.8;
+}
+div#serverConnection {
+  height: 10px;
+}
+div#opponentBoard {
+  position: absolute;
+  top: 10px;
+  background: url(/sega-puyo/img/puyo_1bg.png);
 }
 div#stage {
-  position: relative;
+  position: absolute;
+  top: 0px;
+  left: 0px;
   margin: 0px auto;
   overflow: hidden;
   background: url(/sega-puyo/img/puyo_2bg.png);
 }
 div#score {
+  position: absolute;
+  top: 0px;
+  left: 0px;
   margin: 0px auto;
   overflow: hidden;
   text-align: right;

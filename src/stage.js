@@ -1,8 +1,11 @@
 class Stage {
   static initialize() {
     this.stageElement = document.getElementById("stage");
-    this.stageElement.style.width = `${Config.puyoImgWidth * Config.stageCols}px`;
-    this.stageElement.style.height = `${Config.puyoImgHeight * Config.stageRows}px`;
+    this.stageElementWidth = Config.puyoImgWidth * Config.stageCols;
+    this.stageElementHeight = Config.puyoImgHeight * Config.stageRows;
+    this.stageElement.style.width = `${this.stageElementWidth}px`;
+    this.stageElement.style.height = `${this.stageElementHeight}px`;
+    this.stageElement.style.left = `${(window.innerWidth - this.stageElementWidth) / 2.0}px`;
     this.stageElement.style.backgroundColor = Config.stageBackgroundColor;
     this.zenkeshiImage = new Image();
     Game.loadImg('img/zenkeshi.png', this.zenkeshiImage, () => {
@@ -13,8 +16,9 @@ class Stage {
     this.stageElement.appendChild(Stage.zenkeshiImage);
     this.scoreElement = document.getElementById("score");
     this.scoreElement.style.backgroundColor = Config.scoreBackgroundColor;
-    this.scoreElement.style.top = `${Config.puyoImgHeight * Config.stageRows}px`;
-    this.scoreElement.style.width = `${Config.puyoImgWidth * Config.stageCols}px`;
+    this.scoreElement.style.width = `${this.stageElementWidth}px`;
+    this.scoreElement.style.top = `${this.stageElementHeight}px`;
+    this.scoreElement.style.left = `${(window.innerWidth - this.stageElementWidth) / 2.0}px`;
     this.scoreElement.style.height = `${Config.fontHeight}px`;
     this.nextPuyosElement = document.getElementById("nextPuyos");
     this.nextPuyosElement.style.position = 'absolute';
