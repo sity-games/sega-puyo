@@ -2,11 +2,11 @@ class Stage {
   static initialize() {
     this.stageElement = document.getElementById("stage");
     this.stageElementWidth = Config.puyoImgWidth * Config.stageCols;
+    this.stageElementSideMargin = (window.innerWidth - this.stageElementWidth) / 2.0;
     this.stageElementHeight = Config.puyoImgHeight * Config.stageRows;
     this.stageElement.style.width = `${this.stageElementWidth}px`;
     this.stageElement.style.height = `${this.stageElementHeight}px`;
-    this.stageElement.style.left = `${(window.innerWidth - this.stageElementWidth) / 2.0}px`;
-    this.stageElement.style.backgroundColor = Config.stageBackgroundColor;
+    this.stageElement.style.left = `${this.stageElementSideMargin}px`;
     this.zenkeshiImage = new Image();
     Game.loadImg('img/zenkeshi.png', this.zenkeshiImage, () => {
       this.zenkeshiImage.width = Config.puyoImgWidth * 6;
@@ -15,24 +15,49 @@ class Stage {
     });
     this.stageElement.appendChild(Stage.zenkeshiImage);
     this.scoreElement = document.getElementById("score");
-    this.scoreElement.style.backgroundColor = Config.scoreBackgroundColor;
     this.scoreElement.style.width = `${this.stageElementWidth}px`;
     this.scoreElement.style.top = `${this.stageElementHeight}px`;
-    this.scoreElement.style.left = `${(window.innerWidth - this.stageElementWidth) / 2.0}px`;
+    this.scoreElement.style.left = `${this.stageElementSideMargin}px`;
     this.scoreElement.style.height = `${Config.fontHeight}px`;
     this.nextPuyosElement = document.getElementById("nextPuyos");
     this.nextPuyosElement.style.position = 'absolute';
     this.nextPuyosElement.style.top = '0px';
-    this.nextPuyosElement.style.left = `${(window.innerWidth + (Config.puyoImgWidth * Config.stageCols)) / 2.0}px`
-    this.nextPuyosWidth = (document.body.clientWidth - (Config.puyoImgWidth * Config.stageCols)) / 2.0;
-    if (this.nextPuyosWidth > Config.puyoImgWidth) {
+    this.nextPuyosElement.style.left = `${(window.innerWidth + this.stageElementWidth) / 2.0}px`;
+    if (this.stageElementSideMargin > Config.puyoImgWidth) {
       this.nextPuyosWidth = Config.puyoImgWidth;
       this.nextPuyosHeight = Config.puyoImgHeight;
     } else {
+      this.nextPuyosWidth = this.stageElementSideMargin;
       this.nextPuyosHeight = (this.nextPuyosWidth / Config.puyoImgWidth) * Config.puyoImgHeight;
     }
+    this.serverConnectionElement = document.getElementById("serverConnection");
+    this.serverConnectionElement.src = "img/connectServer.jpg";
+    this.serverConnectionElementWidth = Config.puyoImgWidth * 3;
+    if (this.serverConnectionElementWidth > this.stageElementSideMargin) {
+      this.serverConnectionElementWidth = this.stageElementSideMargin;
+    }
+    this.serverConnectionElementSideMargin = this.stageElementSideMargin - this.serverConnectionElementWidth;
+    this.serverConnectionElement.style.width = `${this.serverConnectionElementWidth}px`;
+    this.serverConnectionElement.style.position = "absolute";
+    this.serverConnectionElement.style.top = "0px";
+    this.serverConnectionElement.style.left = `${this.serverConnectionElementSideMargin}px`;
+    this.opponentUserPuyoWidth = this.serverConnectionElementWidth / Config.stageCols;
+    this.opponentUserPuyoHeight = (this.opponentUserPuyoWidth / Config.puyoImgWidth) * Config.puyoImgHeight;
+    this.opponentUserBoardElement = document.getElementById("opponentUserBoard");
+    this.opponentUserBoardElementWidth = this.serverConnectionElementWidth;
+    this.opponentUserBoardElementHeight = this.opponentUserPuyoHeight * Config.stageRows;
+    this.opponentUserBoardElementSideMargin = this.serverConnectionElementSideMargin;
+    this.opponentUserBoardElement.style.position = "absolute";
+    this.opponentUserBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
+    this.opponentUserBoardElement.style.left = `${this.opponentUserBoardElementSideMargin}px`;
+    this.opponentUserBoardElement.style.width = `${this.opponentUserBoardElementWidth}px`;
+    this.opponentUserBoardElement.style.height = `${this.opponentUserBoardElementHeight}px`;
+  }
+  static start() {
     this.board = [];
     this.hiddenBoard = [];
+    this.fallingPuyoList = [];
+    this.erasingPuyoInfoList = [];
     this.puyoCount = 0;
     for (let y = 0; y < Config.stageRows; y++) {
       this.board.push([]);
@@ -42,6 +67,42 @@ class Stage {
     }
     for (let x = 0; x < Config.stageCols; x++) {
       this.hiddenBoard.push(null);
+    }
+    while (this.stageElement.firstChild) {
+      this.stageElement.removeChild(Stage.stageElement.firstChild);
+    }
+    while (this.opponentUserBoardElement.firstChild) {
+      this.opponentUserBoardElement.removeChild(this.opponentUserBoardElement.firstChild);
+    }
+    if (Game.onlineBattle) {
+      this.opponentUserBoardElement.style.display = "block";
+      this.opponentUserBoardElement.style.position = "absolute";
+      this.opponentUserBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
+      this.opponentUserBoardElement.style.left = `${this.stageElementSideMargin - this.opponentUserBoardElementWidth}px`;
+    }
+  }
+  static showOpponentUserBoard(board) {
+    while (this.opponentUserBoardElement.firstChild) {
+      this.opponentUserBoardElement.removeChild(this.opponentUserBoardElement.firstChild);
+    }
+    let opponentUserNameElement = document.createElement("p");
+    opponentUserNameElement.innerHTML = Game.opponentUserName;
+    opponentUserNameElement.style.position = "absolute";
+    opponentUserNameElement.style.top = "0px";
+    opponentUserNameElement.style.left = "0px";
+    this.opponentUserBoardElement.appendChild(opponentUserNameElement);
+    for (let y = 0; y < Config.stageRows; y++) {
+      for (let x = 0; x < Config.stageCols; x++) {
+        if (board[y * Config.stageCols + x] != 0) {
+          let puyo = PuyoImage.getPuyo(parseInt(board[y * Config.stageCols + x]));
+          puyo.style.position = 'absolute';
+          puyo.style.top = `${y * this.opponentUserPuyoHeight}px`;
+          puyo.style.left = `${x * this.opponentUserPuyoWidth}px`;
+          puyo.style.width = `${this.opponentUserPuyoWidth}px`;
+          puyo.style.height = `${this.opponentUserPuyoHeight}px`;
+          this.opponentUserBoardElement.appendChild(puyo);
+        }
+      }
     }
   }
   static showNextPuyos() {
@@ -69,6 +130,7 @@ class Stage {
     puyoImage.style.top = `${y * Config.puyoImgHeight}px`;
     this.stageElement.appendChild(puyoImage);
     this.board[y][x] = {puyo: puyo, element: puyoImage};
+    this.puyoCount = this.puyoCount + 1;
   }
   static setHiddenPuyo(x, puyo) {
     let puyoImage = PuyoImage.getPuyo(puyo);
@@ -76,13 +138,14 @@ class Stage {
     puyoImage.style.top = `${-1 * Config.puyoImgHeight}px`;
     this.stageElement.appendChild(puyoImage);
     this.hiddenBoard[x] = {puyo: puyo, element: puyoImage};
+    this.puyoCount = this.puyoCount + 1;
   }
   static checkFall() {
     this.fallingPuyoList.length = 0;
     let isFalling = false;
     for (let y = Config.stageRows - 2; y >= 0; y--) {
       let line = this.board[y];
-      for (let x = 0; x < line.length; x++) {
+      for (let x = 0; x < Config.stageCols; x++) {
         if (!this.board[y][x]) {
           continue;
         }
@@ -106,7 +169,7 @@ class Stage {
       for (let x = 0; x < Config.stageCols; x++) {
         if (this.hiddenBoard[x]) {
           let dst = 0;
-          while (dst < Config.stageRows && this.board[dst][x] == null) {
+          while (dst < Config.stageRows && !this.board[dst][x]) {
             dst = dst + 1;
           }
           if (dst > 0) {
@@ -148,24 +211,38 @@ class Stage {
     this.erasingPuyoInfoList.length = 0;
     let erasedPuyoColor = {};
     let sequencePuyoInfoList = [];
+    let sequenceOjamaPuyoInfoList = [];
+    let isSequenceOjamaPuyo = true;
     let existingPuyoInfoList = [];
     let checkSequentialPuyo = (x, y) => {
-      let orig = this.board[y][x];
-      if (!orig) {
-        return;
+      if (!this.board[y][x] || this.board[y][x].puyo < 0) {
+        return false;
       }
       let puyo = this.board[y][x].puyo;
       sequencePuyoInfoList.push({x: x, y: y, cell: this.board[y][x]});
       this.board[y][x] = null;
       let direction = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-      for (let i = 0; i < direction.length; i++) {
-        let dx = x + direction[i][0];
-        let dy = y + direction[i][1];
+      for (let a = 0; a < direction.length; a++) {
+        let dx = x + direction[a][0];
+        let dy = y + direction[a][1];
         if (dx < 0 || dy < 0 || dx >= Config.stageCols || dy >= Config.stageRows) {
           continue;
         }
-        let cell = this.board[dy][dx];
-        if (!cell || cell.puyo !== puyo) {
+        if (!this.board[dy][dx]) {
+          continue;
+        } else if (this.board[dy][dx].puyo < 0) {
+          isSequenceOjamaPuyo = true;
+          for (let b = 0; b < sequenceOjamaPuyoInfoList.length; b++) {
+            if (sequenceOjamaPuyoInfoList[b].x == dx && sequenceOjamaPuyoInfoList[b].y == dy) {
+              isSequenceOjamaPuyo = false;
+              break;
+            }
+          }
+          if (isSequenceOjamaPuyo) {
+            sequenceOjamaPuyoInfoList.push({x: dx, y: dy, cell: this.board[dy][dx]});
+          }
+          continue;
+        } else if (this.board[dy][dx].puyo !== puyo) {
           continue;
         }
         checkSequentialPuyo(dx, dy);
@@ -173,20 +250,28 @@ class Stage {
     };
     for (let y = 0; y < Config.stageRows; y++) {
       for (let x = 0; x < Config.stageCols; x++) {
+        if (!this.board[y][x] || this.board[y][x].puyo < 0) {
+          continue;
+        }
         sequencePuyoInfoList.length = 0;
+        sequenceOjamaPuyoInfoList.length = 0;
         let puyoColor = this.board[y][x] && this.board[y][x].puyo;
         checkSequentialPuyo(x, y);
-        if (sequencePuyoInfoList.length == 0 || sequencePuyoInfoList.length < Config.erasePuyoCount) {
+        if (sequencePuyoInfoList.length < Config.erasePuyoCount) {
           if (sequencePuyoInfoList.length) {
             existingPuyoInfoList.push(...sequencePuyoInfoList);
           }
         } else {
           this.erasingPuyoInfoList.push(...sequencePuyoInfoList);
+          for (let info of sequenceOjamaPuyoInfoList) {
+            this.board[info.y][info.x] = null;
+            this.erasingPuyoInfoList.push(info);
+          }
           erasedPuyoColor[puyoColor] = true;
         }
       }
     }
-    this.puyoCount -= this.erasingPuyoInfoList.length;
+    this.puyoCount = this.puyoCount - this.erasingPuyoInfoList.length;
     for (let info of existingPuyoInfoList) {
       this.board[info.y][info.x] = info.cell;
     }
@@ -259,6 +344,4 @@ class Stage {
     animation();
   }
 }
-Stage.fallingPuyoList = [];
-Stage.erasingPuyoInfoList = [];
 

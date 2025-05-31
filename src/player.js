@@ -1,6 +1,6 @@
 class Player {
   static initialize () {
-    this.keyStatus = {right: false, left: false, up: false, down: false, space: false, x: false, z: false};
+    this.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
     this.touchPoint = {sx: 0, sy: 0, ex: 0, ey: 0};
@@ -20,6 +20,8 @@ class Player {
       Player.keyStatus.down = true;
     } else if (e.code == "Space") {
       Player.keyStatus.space = true;
+    } else if (e.code == "Escape") {
+      Player.keyStatus.esc = true;
     } else if (e.code == "KeyX") {
       Player.keyStatus.x = true;
     } else if (e.code == "KeyZ") {
@@ -39,6 +41,8 @@ class Player {
       Player.keyStatus.down = false;
     } else if (e.code == "Space") {
       Player.keyStatus.space = false;
+    } else if (e.code == "Escape") {
+      Player.keyStatus.esc = false;
     } else if (e.code == "KeyX") {
       Player.keyStatus.x = false;
     } else if (e.code == "KeyZ") {
@@ -62,15 +66,15 @@ class Player {
       let verticalDirection = Player.touchPoint.ey - Player.touchPoint.sy;
       if (Math.abs(horizonDirection) < Math.abs(verticalDirection)) {
         if (verticalDirection < 0) {
-          Player.keyStatus = {right: false, left: false, up: true, down: false, space: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: false, up: true, down: false, space: false, esc: false, x: false, z: false};
         } else {
-          Player.keyStatus = {right: false, left: false, up: false, down: true, space: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: false, up: false, down: true, space: false, esc: false, x: false, z: false};
         }
       } else {
         if (horizonDirection < 0) {
-          Player.keyStatus = {right: false, left: true, up: false, down: false, space: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: true, up: false, down: false, space: false, esc: false, x: false, z: false};
         } else {
-          Player.keyStatus = {right: true, left: false, up: false, down: false, space: false, x: false, z: false};
+          Player.keyStatus = {right: true, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
         }
       }
       Player.touchPoint.sx = Player.touchPoint.ex;
@@ -78,7 +82,7 @@ class Player {
     }
   }
   static touchEndEvent(e) {
-    Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, x: false, z: false};
+    Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
   }
   static createNewPuyo () {
     if (Stage.board[0][2]) {
@@ -87,18 +91,22 @@ class Player {
     let nextPuyosSet = PuyoImage.getNextPuyos();
     this.centerPuyo = nextPuyosSet.centerPuyo;
     this.centerPuyoElement = nextPuyosSet.centerPuyoElement;
+    this.centerPuyoElement.width = Config.puyoImgWidth;
+    this.centerPuyoElement.height = Config.puyoImgHeight;
+    this.centerPuyoElement.style.position = 'absolute';
+    Stage.stageElement.appendChild(this.centerPuyoElement);
     this.movablePuyo = nextPuyosSet.movablePuyo;
     this.movablePuyoElement = nextPuyosSet.movablePuyoElement;
-    Stage.stageElement.appendChild(this.centerPuyoElement);
-    this.centerPuyoElement.style.position = 'absolute';
-    Stage.stageElement.appendChild(this.movablePuyoElement);
+    this.movablePuyoElement.width = Config.puyoImgWidth;
+    this.movablePuyoElement.height = Config.puyoImgHeight;
     this.movablePuyoElement.style.position = 'absolute';
+    Stage.stageElement.appendChild(this.movablePuyoElement);
     this.puyoStatus = {x: 2, y: -1, left: 2 * Config.puyoImgWidth, top: -1 * Config.puyoImgHeight, dx: 0, dy: -1, rotation: 90};
     this.groundFrame = 0;
     this.setPuyoPosition();
     return true;
   }
-  static setPuyoPosition () {
+  static setPuyoPosition() {
     this.centerPuyoElement.style.left = `${this.puyoStatus.left}px`;
     this.centerPuyoElement.style.top = `${this.puyoStatus.top}px`;
     let x = this.puyoStatus.left + Math.cos(this.puyoStatus.rotation * Math.PI / 180) * Config.puyoImgWidth;
@@ -106,13 +114,13 @@ class Player {
     this.movablePuyoElement.style.left = `${x}px`;
     this.movablePuyoElement.style.top = `${y}px`;
   }
-  static falling (isDownPressed) {
+  static falling(isDownPressed) {
     let isBlocked = false;
     let x = this.puyoStatus.x;
     let y = this.puyoStatus.y;
     let dx = this.puyoStatus.dx;
     let dy = this.puyoStatus.dy;
-    if (y + 1 >= Config.stageRows) {
+    if (y + 1 < 0 || y + 1 >= Config.stageRows) {
       isBlocked = true;
     } else if (Stage.board[y + 1][x]) {
       isBlocked = true;
@@ -250,7 +258,7 @@ class Player {
         this.rotateFromRotation = this.puyoStatus.rotation;
         this.puyoStatus.x = this.puyoStatus.x + cx;
         let distRotation = (this.puyoStatus.rotation + this.rotateDegree + 360) % 360;
-        let dCombi = [[1, 0], [0, -1], [-1, 0], [0, 1]][distRotation / 90];
+        let dCombi = [[1, 0], [0, -1], [-1, 0], [0, 1]][Math.floor(distRotation / 90)];
         this.puyoStatus.dx = dCombi[0];
         this.puyoStatus.dy = dCombi[1];
         nextMode = 'rotating';
@@ -301,26 +309,18 @@ class Player {
   static fix() {
     if (this.puyoStatus.y >= 0) {
       Stage.setPuyo(this.puyoStatus.x, this.puyoStatus.y, this.centerPuyo);
-      Stage.puyoCount = Stage.puyoCount + 1;
     } else {
       Stage.setHiddenPuyo(this.puyoStatus.x, this.centerPuyo);
-      Stage.puyoCount = Stage.puyoCount + 1;
     }
     if (this.puyoStatus.y + this.puyoStatus.dy >= 0) {
       Stage.setPuyo(this.puyoStatus.x + this.puyoStatus.dx, this.puyoStatus.y + this.puyoStatus.dy, this.movablePuyo);
-      Stage.puyoCount = Stage.puyoCount + 1;
     } else {
       Stage.setHiddenPuyo(this.puyoStatus.x + this.puyoStatus.dx, this.movablePuyo);
-      Stage.puyoCount = Stage.puyoCount + 1;
     }
     Stage.stageElement.removeChild(this.centerPuyoElement);
     Stage.stageElement.removeChild(this.movablePuyoElement);
     this.centerPuyoElement = null;
     this.movablePuyoElement = null;
   }
-  static batankyu() {
-    if (this.keyStatus.space) {
-      location.reload()
-    }
-  }
 }
+

@@ -17,7 +17,7 @@ class Score {
     this.score = 0;
     this.showScore();
   }
-  static showScore () {
+  static showScore() {
     let score = this.score;
     while (Stage.scoreElement.firstChild) {
       Stage.scoreElement.removeChild(Stage.scoreElement.firstChild);
@@ -28,18 +28,19 @@ class Score {
       score = Math.floor(score / 10);
     }
   }
-  static calculateScore (rensa, piece, color) {
+  static calculateScore(rensa, piece, color) {
     rensa = Math.min(rensa, Score.rensaBonus.length - 1);
     piece = Math.min(piece, Score.pieceBonus.length - 1);
     color = Math.min(color, Score.colorBonus.length - 1);
-    let scale = Score.rensaBonus[rensa] + Score.pieceBonus[piece] + Score.colorBonus[color];
+    // let scale = Score.rensaBonus[rensa] + Score.pieceBonus[piece] + Score.colorBonus[color];
+    let scale = Score.rensaBonus[rensa] + Score.pieceBonus[piece];
     if (scale === 0) {
       scale = 1;
     }
     this.addScore(scale * piece * 10);
   }
   static addScore (score) {
-    this.score += score;
+    this.score = this.score + score;
     this.showScore();
   }
 };

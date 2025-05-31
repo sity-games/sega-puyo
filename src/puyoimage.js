@@ -11,6 +11,12 @@ class PuyoImage {
         this.puyoImages[a].style.position = 'absolute';
       });
     }
+    this.ojamaPuyoImage = new Image();
+    Game.loadImg('img/ojamaPuyo.png', this.ojamaPuyoImage, () => {
+      this.ojamaPuyoImage.width = Config.puyoImgWidth;
+      this.ojamaPuyoImage.height = Config.puyoImgHeight;
+      this.ojamaPuyoImage.style.position = 'absolute';
+    });
     for (let i = this.puyoImages.length - 1; i >= 0; i--) {
       let j = Math.floor(Math.random() * (i + 1));
       [this.puyoImages[i], this.puyoImages[j]] = [this.puyoImages[j], this.puyoImages[i]];
@@ -42,7 +48,10 @@ class PuyoImage {
     return nextPuyos;
   }
   static getPuyo(index) {
-    return this.puyoImages[index - 1].cloneNode();
+    if (index > 0 && index <= Config.puyoColors) {
+      return this.puyoImages[index - 1].cloneNode();
+    }
+    return this.ojamaPuyoImage.cloneNode();
   }
   static prepareBatankyu(frame) {
     this.gameOverFrame = frame;
