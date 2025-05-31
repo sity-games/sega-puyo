@@ -8,7 +8,6 @@ img#nowLoading {
   left: 0px;
   height: 15vh;
   margin: calc((100vh - 15vh) / 2.0) calc((100vw - 49vh) / 2.0);
-  opacity: 0.8;
 }
 img#pause {
   display: none;
@@ -19,12 +18,17 @@ img#pause {
   margin: calc((100vh - 15vh) / 2.0) calc((100vw - 49vh) / 2.0);
   opacity: 0.8;
 }
-div#serverConnection {
-  height: 10px;
-}
-div#opponentBoard {
+img#youWin {
   position: absolute;
-  top: 10px;
+  top: 0px;
+  left: 0px;
+  height: 15vh;
+  margin: calc((100vh - 15vh) / 2.0) calc((100vw - 49vh) / 2.0);
+}
+img#changeServerConnection {
+  cursor: pointer;
+}
+div#opponentUserBoard {
   background: url(/sega-puyo/img/puyo_1bg.png);
 }
 div#stage {

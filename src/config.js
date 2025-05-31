@@ -1,12 +1,10 @@
 let Config = {};
 Config.loadImgInterval = 30;
-Config.puyoImgWidth = 40;
-Config.puyoImgHeight = 40;
 Config.nextPuyosSetCount = 2;
 Config.fontHeight = 33;
 Config.stageCols = 6;
 Config.stageRows = 12;
-Config.puyoImgHeight = (window.innerHeight-Config.fontHeight)/Config.stageRows
+Config.puyoImgHeight = (window.innerHeight - Config.fontHeight) / Config.stageRows
 Config.puyoImgWidth = Config.puyoImgHeight;
 Config.stageBackgroundColor = '#ffffff';
 Config.scoreBackgroundColor = '#24c0bb';
