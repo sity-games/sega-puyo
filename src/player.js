@@ -174,7 +174,7 @@ class Player {
           Score.addScore(1);
         }
         y = this.puyoStatus.y = y + 1;
-        if (y + 1 >= Config.stageRows) {
+        if (y + 1 < 0 || y + 1 >= Config.stageRows) {
           isBlocked = true;
         } else if (Stage.board[y + 1][x]) {
           isBlocked = true;
@@ -256,8 +256,8 @@ class Player {
           cy = -1;
         }
       } else if (rotation === 90) {
-        if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
-          if (y + 1 >= Config.stageRows || x + dx < 0 || x + dx >= Config.stageCols || Stage.board[y + 1][x + dx]) {
+        if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 < 0 || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
+          if (y + 1 < 0 || y + 1 >= Config.stageRows || x + dx < 0 || x + dx >= Config.stageCols || Stage.board[y + 1][x + dx]) {
             canRotate = false;
           } else {
             cx = dx;
@@ -271,8 +271,8 @@ class Player {
           cy = -1;
         }
       } else if (rotation === 270) {
-        if (x + dx < 0 || x + dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x + dx]) {
-          if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
+        if (x + dx < 0 || x + dx >= Config.stageCols || y + 1 < 0 || y + 1 >= Config.stageRows || Stage.board[y + 1][x + dx]) {
+          if (x - dx < 0 || x - dx >= Config.stageCols || y + 1 < 0 || y + 1 >= Config.stageRows || Stage.board[y + 1][x - dx]) {
             canRotate = false;
           } else {
             cx = -dx;
