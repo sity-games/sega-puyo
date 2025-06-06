@@ -84,6 +84,43 @@ class Player {
   static touchEndEvent(e) {
     Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
   }
+  static gamepadEvent(e=null) {
+    let gamepads = navigator.getGamepads();
+    for (let a = 0; a < gamepads.length; a++) {
+      if (gamepads[a]) {
+        if (gamepads[a].axes[Config.gamepad.leftStick.x] > 0.5) {
+          Player.keyStatus.right = true;
+          Player.keyStatus.left = false;
+        } else if (gamepads[a].axes[Config.gamepad.leftStick.x] < -0.5) {
+          Player.keyStatus.right = false;
+          Player.keyStatus.left = true;
+        } else {
+          Player.keyStatus.right = false;
+          Player.keyStatus.left = false;
+        }
+        if (gamepads[a].axes[Config.gamepad.leftStick.y] > 0.5) {
+          Player.keyStatus.up = false;
+          Player.keyStatus.down = true;
+        } else if (gamepads[a].axes[Config.gamepad.leftStick.y] < -0.5) {
+          Player.keyStatus.up = true;
+          Player.keyStatus.down = false;
+        } else {
+          Player.keyStatus.up = false;
+          Player.keyStatus.down = false;
+        }
+        if (gamepads[a].buttons[Config.gamepad.buttonA].pressed) {
+          Player.keyStatus.x = true;
+        } else {
+          Player.keyStatus.x = false;
+        }
+        if (gamepads[a].buttons[Config.gamepad.buttonB].pressed) {
+          Player.keyStatus.z = true;
+        } else {
+          Player.keyStatus.z = false;
+        }
+      }
+    }
+  }
   static createNewPuyo () {
     if (Stage.board[0][2]) {
       return false;

@@ -148,6 +148,7 @@ class Game {
         PuyoImage.nowLoadingImage.style.display = "none";
       }
     }
+    Player.gamepadEvent();
     if (this.mode == 'start') {
       if (this.imgQueue.length > 0) {
         PuyoImage.nowLoadingImage.style.display = "block";

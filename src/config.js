@@ -18,5 +18,14 @@ Config.playerRotateFrame = 10;
 Config.zenkeshiDuration = 150;
 Config.zenkeshiScore = 3600;
 Config.gameOverFrame = 3000;
-Config.penaltyUnit = 1000;
+Config.penaltyUnit = 300;
+Config.gamepad = {};
+Config.gamepad.leftStick = {};
+Config.gamepad.leftStick.x = 0;
+Config.gamepad.leftStick.y = 1;
+Config.gamepad.rightStick = {};
+Config.gamepad.rightStick.x = 2;
+Config.gamepad.rightStick.y = 3;
+Config.gamepad.buttonA = 1;
+Config.gamepad.buttonB = 0;
 
