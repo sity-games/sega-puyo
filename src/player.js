@@ -1,9 +1,9 @@
 class Player {
   static initialize () {
-    this.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
+    this.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, s: false, x: false, z: false};
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
-    this.touchPoint = {sx: 0, sy: 0, ex: 0, ey: 0};
+    this.touchPoint = {sx: 0, sy: 0, ex: 0, ey: 0, dx: 0, dy: 0, absdx: 0, absdy: 0};
     document.addEventListener('touchstart', this.touchStartEvent);
     document.addEventListener('touchmove', this.touchMoveEvent);
     document.addEventListener('touchend', this.touchEndEvent);
@@ -22,6 +22,8 @@ class Player {
       Player.keyStatus.space = true;
     } else if (e.code == "Escape") {
       Player.keyStatus.esc = true;
+    } else if (e.code == "KeyS") {
+      Player.keyStatus.s = true;
     } else if (e.code == "KeyX") {
       Player.keyStatus.x = true;
     } else if (e.code == "KeyZ") {
@@ -43,6 +45,8 @@ class Player {
       Player.keyStatus.space = false;
     } else if (e.code == "Escape") {
       Player.keyStatus.esc = false;
+    } else if (e.code == "KeyS") {
+      Player.keyStatus.s = false;
     } else if (e.code == "KeyX") {
       Player.keyStatus.x = false;
     } else if (e.code == "KeyZ") {
@@ -53,28 +57,31 @@ class Player {
   static touchStartEvent(e) {
     Player.touchPoint.sx = e.touches[0].clientX;
     Player.touchPoint.sy = e.touches[0].clientY;
+    Player.touchPoint.ex = -1;
+    Player.touchPoint.ey = -1;
+    Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: true, s: false, x: false, z: false};
   }
   static touchMoveEvent(e) {
-    let dx = e.touches[0].clientX - Player.touchPoint.sx;
-    let dy = e.touches[0].clientY - Player.touchPoint.sy;
-    let absdx = Math.abs(dx);
-    let absdy = Math.abs(dy);
-    if (absdx > 20 || absdy > 20) {
+    Player.touchPoint.dx = e.touches[0].clientX - Player.touchPoint.sx;
+    Player.touchPoint.dy = e.touches[0].clientY - Player.touchPoint.sy;
+    Player.touchPoint.absdx = Math.abs(Player.touchPoint.dx);
+    Player.touchPoint.absdy = Math.abs(Player.touchPoint.dy);
+    if (Player.touchPoint.absdx > 20 || Player.touchPoint.absdy > 20) {
       Player.touchPoint.ex = e.touches[0].clientX
       Player.touchPoint.ey = e.touches[0].clientY
       let horizonDirection = Player.touchPoint.ex - Player.touchPoint.sx;
       let verticalDirection = Player.touchPoint.ey - Player.touchPoint.sy;
       if (Math.abs(horizonDirection) < Math.abs(verticalDirection)) {
         if (verticalDirection < 0) {
-          Player.keyStatus = {right: false, left: false, up: true, down: false, space: false, esc: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: false, up: true, down: false, space: false, esc: false, s: false, x: false, z: false};
         } else {
-          Player.keyStatus = {right: false, left: false, up: false, down: true, space: false, esc: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: false, up: false, down: true, space: false, esc: false, s: false, x: false, z: false};
         }
       } else {
         if (horizonDirection < 0) {
-          Player.keyStatus = {right: false, left: true, up: false, down: false, space: false, esc: false, x: false, z: false};
+          Player.keyStatus = {right: false, left: true, up: false, down: false, space: false, esc: false, s: false, x: false, z: false};
         } else {
-          Player.keyStatus = {right: true, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
+          Player.keyStatus = {right: true, left: false, up: false, down: false, space: false, esc: false, s: false, x: false, z: false};
         }
       }
       Player.touchPoint.sx = Player.touchPoint.ex;
@@ -82,41 +89,74 @@ class Player {
     }
   }
   static touchEndEvent(e) {
-    Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, x: false, z: false};
+    if (Player.touchPoint.ex < 0 && Player.touchPoint.ey < 0) {
+      Player.keyStatus = {right: false, left: false, up: false, down: false, space: true, esc: false, s: false, x: false, z: false};
+    } else {
+      Player.keyStatus = {right: false, left: false, up: false, down: false, space: false, esc: false, s: false, x: false, z: false};
+    }
   }
   static gamepadEvent(e=null) {
     let gamepads = navigator.getGamepads();
     for (let a = 0; a < gamepads.length; a++) {
       if (gamepads[a]) {
-        if (gamepads[a].axes[Config.gamepad.leftStick.x] > 0.5) {
+        if (gamepads[a].axes[Config.gamepad.leftStick.x] > 0.8) {
           Player.keyStatus.right = true;
           Player.keyStatus.left = false;
-        } else if (gamepads[a].axes[Config.gamepad.leftStick.x] < -0.5) {
+        } else if (gamepads[a].axes[Config.gamepad.leftStick.x] < -0.8) {
           Player.keyStatus.right = false;
           Player.keyStatus.left = true;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonLeft].pressed) {
+          Player.keyStatus.left = true;
+          Player.keyStatus.right = false;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonRight].pressed) {
+          Player.keyStatus.left = false;
+          Player.keyStatus.right = true;
         } else {
           Player.keyStatus.right = false;
           Player.keyStatus.left = false;
         }
-        if (gamepads[a].axes[Config.gamepad.leftStick.y] > 0.5) {
+        if (gamepads[a].axes[Config.gamepad.leftStick.y] > 0.8) {
           Player.keyStatus.up = false;
           Player.keyStatus.down = true;
-        } else if (gamepads[a].axes[Config.gamepad.leftStick.y] < -0.5) {
+        } else if (gamepads[a].axes[Config.gamepad.leftStick.y] < -0.8) {
           Player.keyStatus.up = true;
           Player.keyStatus.down = false;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonUp].pressed) {
+          Player.keyStatus.up = true;
+          Player.keyStatus.down = false;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonDown].pressed) {
+          Player.keyStatus.up = false;
+          Player.keyStatus.down = true;
         } else {
           Player.keyStatus.up = false;
           Player.keyStatus.down = false;
         }
         if (gamepads[a].buttons[Config.gamepad.buttonA].pressed) {
           Player.keyStatus.x = true;
+          Player.keyStatus.space = true;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonX].pressed) {
+          Player.keyStatus.x = true;
+          Player.keyStatus.space = false;
         } else {
           Player.keyStatus.x = false;
+          Player.keyStatus.space = false;
         }
         if (gamepads[a].buttons[Config.gamepad.buttonB].pressed) {
           Player.keyStatus.z = true;
+        } else if (gamepads[a].buttons[Config.gamepad.buttonY].pressed) {
+          Player.keyStatus.z = true;
         } else {
           Player.keyStatus.z = false;
+        }
+        if (gamepads[a].buttons[Config.gamepad.buttonSelect].pressed) {
+          Player.keyStatus.s = true;
+        } else {
+          Player.keyStatus.s = false;
+        }
+        if (gamepads[a].buttons[Config.gamepad.buttonStart].pressed) {
+          Player.keyStatus.esc = true;
+        } else {
+          Player.keyStatus.esc = false;
         }
       }
     }

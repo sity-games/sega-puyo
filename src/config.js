@@ -6,7 +6,7 @@ Config.stageCols = 6;
 Config.stageRows = 12;
 Config.puyoImgHeight = (window.innerHeight - Config.fontHeight) / Config.stageRows
 Config.puyoImgWidth = Config.puyoImgHeight;
-Config.freeFallingSpeed = 16;
+Config.freeFallingSpeed = 32;
 Config.erasePuyoCount = 4;
 Config.eraseAnimationDuration = 30;
 Config.puyoColors = 4;
@@ -28,4 +28,13 @@ Config.gamepad.rightStick.x = 2;
 Config.gamepad.rightStick.y = 3;
 Config.gamepad.buttonA = 1;
 Config.gamepad.buttonB = 0;
+Config.gamepad.buttonX = 2;
+Config.gamepad.buttonY = 3;
+Config.gamepad.buttonSelect = 8;
+Config.gamepad.buttonStart = 9;
+Config.gamepad.buttonUp = 13;
+Config.gamepad.buttonDown = 14;
+Config.gamepad.buttonLeft = 15;
+Config.gamepad.buttonRight = 16;
+
 

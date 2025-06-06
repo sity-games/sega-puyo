@@ -2,7 +2,7 @@ class Game {
   static initialize() {
     this.mode = 'start';
     this.serverURL = '/sega-puyo/server.php';
-      this.userName = 'PuyoPuyo Master';
+    this.userName = 'PuyoPuyo Master';
     this.userCode = '';
     this.onlineBattle = false;
     this.waitingServerResponse = false;
@@ -43,25 +43,29 @@ class Game {
       setTimeout(() => this.loadImg(null, null), Config.loadImgInterval);
     }
   }
-  static serverConnection(mode='start') {
+  static serverConnection(mode='start', isEditSettings=true) {
     if (this.imgQueue.length > 0) {
       return false;
     }
     this.attack = 0;
     this.mode = mode;
     if (!this.onlineBattle) {
-      let serverURL = prompt("Enter Server URL", this.serverURL);
-      if (serverURL) {
+      if (isEditSettings) {
+        this.serverURL = prompt("Enter Server URL", this.serverURL);
+      }
+      if (this.serverURL) {
         this.onlineBattle = true;
-        this.serverURL = serverURL;
         this.userCode = "";
-        this.userName = prompt("Enter User Name", this.userName);
+        if (isEditSettings) {
+          this.userName = prompt("Enter User Name", this.userName);
+        }
         this.opponentReady = false;
         Stage.serverConnectionElement.src = "img/disconnectServer.jpg";
       }
       this.fetchClientData(true);
     } else {
       this.onlineBattle = false;
+      this.opponentUserAttack = 0;
       Stage.serverConnectionElement.src = "img/connectServer.jpg";
       Stage.opponentUserBoardElement.style.display = "none";
       this.fetchClientData(true, true);
@@ -110,6 +114,7 @@ class Game {
     }
   }
   static loop() {
+    Player.gamepadEvent();
     if (!this.onlineBattle && Player.keyStatus.esc) {
       PuyoImage.pauseImage.style.display = "block";
       requestAnimationFrame(() => this.loop());
@@ -117,21 +122,11 @@ class Game {
     } else {
       PuyoImage.pauseImage.style.display = "none";
     }
+    if (!this.onlineBattle && Player.keyStatus.s) {
+      this.serverConnection('start', false);
+    }
     if (this.onlineBattle) {
       this.fetchClientData();
-      if (this.mode == 'start' || this.mode == 'playing' || this.mode == 'moving' || this.mode == 'rotating') {
-        this.penalty = this.penalty + Math.floor((this.opponentUserAttack - this.damage) / Config.penaltyUnit);
-        this.damage = this.opponentUserAttack;
-        for (let x = 0; x < Config.stageCols && this.penalty > 0; x++) {
-          if (x == Player.puyoStatus.x || x == Player.puyoStatus.x + Player.puyoStatus.dx) {
-            continue;
-          } else if (Stage.hiddenBoard[x] == null && Math.floor(Math.random() * 2) == 1) {
-            Stage.setHiddenPuyo(x, -1);
-            this.penalty = this.penalty - 1;
-            // this.mode = 'checkFallOnly';
-          }
-        }
-      }
       if (!this.opponentReady) {
         PuyoImage.nowLoadingImage.style.display = "block";
         requestAnimationFrame(() => this.loop());
@@ -148,7 +143,6 @@ class Game {
         PuyoImage.nowLoadingImage.style.display = "none";
       }
     }
-    Player.gamepadEvent();
     if (this.mode == 'start') {
       if (this.imgQueue.length > 0) {
         PuyoImage.nowLoadingImage.style.display = "block";
@@ -159,33 +153,18 @@ class Game {
         this.beforeAttack = 0;
         this.damage = 0;
         this.penalty = 0;
+        this.penaltyNext = 0;
         this.mode = 'checkFall';
         PuyoImage.start();
         Stage.start();
         Score.start();
       }
       this.youWinImageElement.style.display = "none";
-    } else if (this.mode == 'checkFallOnly') {
-      let cx = Player.puyoStatus.x;
-      let cy = Player.puyoStatus.y;
-      let mx = Player.puyoStatus.x + Player.puyoStatus.dx;
-      let my = Player.puyoStatus.y + Player.puyoStatus.dy;
-      if ((cy > 0 && Stage.board[cy][cx]) || (my > 0 && Stage.board[my][mx])) {
-        this.mode = 'gameOver';
-      } else if (Stage.checkFall()) {
-        this.mode = 'fallOnly';
-      } else {
-        this.mode = 'playing';
-      }
     } else if (this.mode == 'checkFall') {
       if (Stage.checkFall()) {
         this.mode = 'fall'
       } else {
         this.mode = 'checkErase';
-      }
-    } else if (this.mode == 'fallOnly') {
-      if (!Stage.fall()) {
-        this.mode = 'playing';
       }
     } else if (this.mode == 'fall') {
       if (!Stage.fall()) {
@@ -204,10 +183,18 @@ class Game {
           Stage.showZenkeshi();
           Score.addScore(Config.zenkeshiScore);
         }
-        this.attack = this.attack + (Score.score - this.beforeAttack);
+        this.addAtack = Math.floor((Score.score - this.beforeAttack) / Config.penaltyUnit);
         this.beforeAttack = Score.score;
+        if (this.addAtack > this.penaltyNext) {
+          this.addAtack = this.addAtack - this.penaltyNext;
+          this.penaltyNext = 0;
+        } else {
+          this.addAtack = 0;
+          this.penaltyNext = this.penaltyNext - this.addAtack;
+        }
+        this.attack = this.attack + this.addAtack;
         this.combinationCount = 0;
-        this.mode = 'newPuyo'
+        this.mode = 'penalty'; // 'newPuyo';
       }
     } else if(this.mode == 'erasing') {
       if (!Stage.erasing(this.frame)) {
@@ -232,7 +219,31 @@ class Game {
       }
     } else if (this.mode == 'fix') {
       Player.fix();
-      this.mode = 'checkFall'
+      this.mode = 'checkFall';
+    } else if (this.mode == 'penalty') {
+      this.penalty = this.penaltyNext;
+      if (this.penalty > 0) {
+        this.hiddenPuyoCount = 0;
+        for (let x = 0; x < Config.stageCols && this.penalty > 0; x++) {
+          if (Stage.hiddenBoard[x] == null) {
+            if (Math.floor(Math.random() * 2) == 1) {
+              Stage.setHiddenPuyo(x, -1);
+              this.penalty = this.penalty - 1;
+            }
+          } else {
+            this.hiddenPuyoCount = this.hiddenPuyoCount + 1;
+          }
+        }
+        if (this.hiddenPuyoCount == Config.stageCols) {
+          this.mode = 'newPuyo';
+        } else {
+          this.mode = 'checkFall';
+        }
+      } else {
+        this.mode = 'newPuyo';
+      }
+      this.penaltyNext = this.penalty + (this.opponentUserAttack - this.damage);
+      this.damage = this.opponentUserAttack;
     } else if (this.mode == 'gameOver') {
       PuyoImage.prepareBatankyu(this.frame);
       this.mode = 'batankyu';
