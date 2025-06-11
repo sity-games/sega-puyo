@@ -9,7 +9,11 @@ class Game {
     this.frame = 0;
     this.attack = 0;
     this.beforeAttack = 0;
+    this.beforeFetchAttack = 0;
     this.damage = 0;
+    this.damageNext = 0;
+    this.absorbedDamage = 0;
+    this.beforeFetchDamage = 0;
     this.penalty = 0;
     this.combinationCount = 0;
     this.imgQueue = [];
@@ -48,16 +52,24 @@ class Game {
       return false;
     }
     this.attack = 0;
+    this.beforeAttack = 0;
+    this.beforeFetchAttack = 0;
     this.mode = mode;
     if (!this.onlineBattle) {
       if (isEditSettings) {
-        this.serverURL = prompt("Enter Server URL", this.serverURL);
+        let serverURL = prompt("Enter Server URL", this.serverURL);
+        if (serverURL) {
+          this.serverURL = serverURL;
+        }
       }
       if (this.serverURL) {
         this.onlineBattle = true;
         this.userCode = "";
         if (isEditSettings) {
-          this.userName = prompt("Enter User Name", this.userName);
+          let userName = prompt("Enter User Name", this.userName);
+          if (userName) {
+            this.userName = userName;
+          }
         }
         this.opponentReady = false;
         Stage.serverConnectionElement.src = "img/disconnectServer.jpg";
@@ -65,7 +77,9 @@ class Game {
       this.fetchClientData(true);
     } else {
       this.onlineBattle = false;
-      this.opponentUserAttack = 0;
+      this.damage = 0;
+      this.damageNext = 0;
+      this.absorbedDamage = 0;
       Stage.serverConnectionElement.src = "img/connectServer.jpg";
       Stage.opponentUserBoardElement.style.display = "none";
       this.fetchClientData(true, true);
@@ -79,6 +93,8 @@ class Game {
       data.append("userName", this.userName);
       data.append("userCode", this.userCode);
       data.append("attack", this.attack);
+      data.append("beforeFetchAttack", this.beforeFetchAttack);
+      data.append("beforeFetchDamage", this.beforeFetchDamage);
       data.append("puyosCount", this.puyosCount);
       let myBoard = [];
       for (let y = 0; y < Config.stageRows; y++) {
@@ -96,13 +112,16 @@ class Game {
       } else {
         data.append("batankyu", 0);
       } 
+      this.beforeFetchAttack = this.attack;
       fetch(this.serverURL, {method: 'POST', body: data}).then(data => data.text()).then(data => {
         data = JSON.parse(data);
         this.userCode = data.userCode;
+        this.attack = this.beforeFetchAttack = data.afterFetchAttack + (this.attack - this.beforeFetchAttack);
         this.opponentUserName = data.opponentUserName;
         this.opponentUserCode = data.opponentUserCode;
-        this.opponentUserAttack = data.opponentUserAttack;
         this.opponentUserBatankyu = data.opponentUserBatankyu;
+        this.damageNext = data.damage;
+        this.absorbedDamage = this.absorbedDamage + data.absorbedDamage;
         if (data.opponentUserBoard) {
           Stage.showOpponentUserBoard(data.opponentUserBoard.split(','));
         }
@@ -151,9 +170,13 @@ class Game {
         this.puyosCount = 0;
         this.attack = 0;
         this.beforeAttack = 0;
+        this.beforeFetchAttack = 0;
         this.damage = 0;
+        this.damageNext = 0;
+        this.absorbedDamage = 0;
+        this.beforeFetchDamage = 0;
         this.penalty = 0;
-        this.penaltyNext = 0;
+        this.combinationCount = 0;
         this.mode = 'checkFall';
         PuyoImage.start();
         Stage.start();
@@ -183,16 +206,16 @@ class Game {
           Stage.showZenkeshi();
           Score.addScore(Config.zenkeshiScore);
         }
-        this.addAtack = Math.floor((Score.score - this.beforeAttack) / Config.penaltyUnit);
+        this.addAttack = Math.floor((Score.score - this.beforeAttack) / Config.penaltyUnit);
         this.beforeAttack = Score.score;
-        if (this.addAtack > this.penaltyNext) {
-          this.addAtack = this.addAtack - this.penaltyNext;
-          this.penaltyNext = 0;
+        if (this.addAttack > this.penalty) {
+          this.addAttack = this.addAttack - this.penalty;
+          this.penalty = 0;
         } else {
-          this.addAtack = 0;
-          this.penaltyNext = this.penaltyNext - this.addAtack;
+          this.penalty = this.penalty - this.addAttack;
+          this.addAttack = 0;
         }
-        this.attack = this.attack + this.addAtack;
+        this.attack = this.attack + this.addAttack;
         this.combinationCount = 0;
         this.mode = 'penalty'; // 'newPuyo';
       }
@@ -221,7 +244,6 @@ class Game {
       Player.fix();
       this.mode = 'checkFall';
     } else if (this.mode == 'penalty') {
-      this.penalty = this.penaltyNext;
       if (this.penalty > 0) {
         this.hiddenPuyoCount = 0;
         for (let x = 0; x < Config.stageCols && this.penalty > 0; x++) {
@@ -242,8 +264,8 @@ class Game {
       } else {
         this.mode = 'newPuyo';
       }
-      this.penaltyNext = this.penalty + (this.opponentUserAttack - this.damage);
-      this.damage = this.opponentUserAttack;
+      this.penalty = this.penalty + ((this.damageNext - this.absorbedDamage) - this.damage);
+      this.damage = this.damageNext;
     } else if (this.mode == 'gameOver') {
       PuyoImage.prepareBatankyu(this.frame);
       this.mode = 'batankyu';
