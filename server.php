@@ -65,8 +65,9 @@
     $userKey = 'user1';
     $userName = safeStr($_POST['userName']);
     $userCode = safeStr($_POST['userCode']);
-    $attack = intval($_POST['attack']);
-    $beforeFetchAttack = intval($_POST['beforeFetchAttack']);
+    $absorbedDamage = intval($_POST['absorbedDamage']);
+    $attack = intval($_POST['attack']) - $absorbedDamage;
+    $beforeFetchAttack = intval($_POST['beforeFetchAttack']) - $absorbedDamage;
     $deltaAttack = $attack - $beforeFetchAttack;
     $beforeFetchDamage = intval($_POST['beforeFetchDamage']);
     $batankyu = intval($_POST['batankyu']);
@@ -100,44 +101,42 @@
       $data = sqlData($query);
       $response['userCode'] = $data['user1_code'];
       $response['userName'] = $data['user1_name'];
-      $response['opponentUserCode'] = $data['user2_code'];
-      $response['opponentUserName'] = $data['user2_name'];
-      $response['damage'] = $data['user2_attack'];
+      $response['rivalCode'] = $data['user2_code'];
+      $response['rivalName'] = $data['user2_name'];
       $deltaDamage = intval($data['user2_attack']) - $beforeFetchDamage;
       if ($deltaAttack > $deltaDamage) {
-        $afterFetchAttack = $attack - $deltaDamage;
-        $absorbedDamage = $deltaDamage;
+        $absorbedDamage = $absorbedDamage + $deltaDamage;
+        $attack = $attack - $deltaDamage;
       } else {
-        $afterFetchAttack = $beforeFetchAttack;
-        $absorbedDamage = $deltaAttack;
+        $absorbedDamage = $absorbedDamage + $deltaAttack;
+        $attack = $attack - $deltaAttack;
       } 
-      $response['afterFetchAttack'] = $afterFetchAttack;
       $response['absorbedDamage'] = $absorbedDamage;
-      $response['opponentUserBatankyu'] = $data['user2_batankyu'];
-      $response['opponentUserBoard'] = $data['user2_board'];
-      sqlUpdate('puyoServer', "user1_batankyu=$batankyu,user1_puyosCount=$puyosCount,user1_board='$myBoard',user1_attack=$afterFetchAttack", "id={$data['id']}");
+      $response['damage'] = intval($data['user2_attack']) - $absorbedDamage;
+      $response['rivalBatankyu'] = $data['user2_batankyu'];
+      $response['rivalBoard'] = $data['user2_board'];
+      sqlUpdate('puyoServer', "user1_batankyu=$batankyu,user1_puyosCount=$puyosCount,user1_board='$myBoard',user1_attack=$attack", "id={$data['id']}");
     } else {
       $query = sqlSelect('puyoServer', '*', "user2_code='{$userCode}'");
       if ($query->rowCount()) {
         $data = sqlData($query);
         $response['userCode'] = $data['user2_code'];
         $response['userName'] = $data['user2_name'];
-        $response['opponentUserCode'] = $data['user1_code'];
-        $response['opponentUserName'] = $data['user1_name'];
-        $response['damage'] = $data['user1_attack'];
+        $response['rivalCode'] = $data['user1_code'];
+        $response['rivalName'] = $data['user1_name'];
         $deltaDamage = intval($data['user1_attack']) - $beforeFetchDamage;
         if ($deltaAttack > $deltaDamage) {
-          $afterFetchAttack = $attack - $deltaDamage;
-          $absorbedDamage = $deltaDamage;
+          $absorbedDamage = $absorbedDamage + $deltaDamage;
+          $attack = $attack - $deltaDamage;
         } else {
-          $afterFetchAttack = $beforeFetchAttack;
-          $absorbedDamage = $deltaAttack;
+          $absorbedDamage = $absorbedDamage + $deltaAttack;
+          $attack = $attack - $deltaAttack;
         }
-        $response['afterFetchAttack'] = $afterFetchAttack;
         $response['absorbedDamage'] = $absorbedDamage;
-        $response['opponentUserBatankyu'] = $data['user1_batankyu'];
-        $response['opponentUserBoard'] = $data['user1_board'];
-        sqlUpdate('puyoServer', "user2_batankyu=$batankyu,user2_puyosCount=$puyosCount,user2_board='$myBoard',user2_attack=$afterFetchAttack", "id={$data['id']}");
+        $response['damage'] = intval($data['user1_attack']) - $absorbedDamage;
+        $response['rivalBatankyu'] = $data['user1_batankyu'];
+        $response['rivalBoard'] = $data['user1_board'];
+        sqlUpdate('puyoServer', "user2_batankyu=$batankyu,user2_puyosCount=$puyosCount,user2_board='$myBoard',user2_attack=$attack", "id={$data['id']}");
       }
     }
   }

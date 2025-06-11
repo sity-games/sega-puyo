@@ -20,7 +20,7 @@ class Game {
     this.imgQueueActive = false;
     PuyoImage.initialize();
     Stage.initialize();
-    Stage.opponentUserBoardElement.style.display = "none";
+    Stage.rivalBoardElement.style.display = "none";
     Stage.serverConnectionElement.addEventListener("click", () => this.serverConnection());
     Player.initialize();
     Score.initialize();
@@ -71,7 +71,7 @@ class Game {
             this.userName = userName;
           }
         }
-        this.opponentReady = false;
+        this.rivalReady = false;
         Stage.serverConnectionElement.src = "img/disconnectServer.jpg";
       }
       this.fetchClientData(true);
@@ -81,7 +81,7 @@ class Game {
       this.damageNext = 0;
       this.absorbedDamage = 0;
       Stage.serverConnectionElement.src = "img/connectServer.jpg";
-      Stage.opponentUserBoardElement.style.display = "none";
+      Stage.rivalBoardElement.style.display = "none";
       this.fetchClientData(true, true);
     }
     return true;
@@ -95,7 +95,9 @@ class Game {
       data.append("attack", this.attack);
       data.append("beforeFetchAttack", this.beforeFetchAttack);
       data.append("beforeFetchDamage", this.beforeFetchDamage);
+      data.append("absorbedDamage", this.absorbedDamage);
       data.append("puyosCount", this.puyosCount);
+      this.beforeFetchAttack = this.attack;
       let myBoard = [];
       for (let y = 0; y < Config.stageRows; y++) {
         for (let x = 0; x < Config.stageCols; x++) {
@@ -112,21 +114,19 @@ class Game {
       } else {
         data.append("batankyu", 0);
       } 
-      this.beforeFetchAttack = this.attack;
       fetch(this.serverURL, {method: 'POST', body: data}).then(data => data.text()).then(data => {
         data = JSON.parse(data);
         this.userCode = data.userCode;
-        this.attack = this.beforeFetchAttack = data.afterFetchAttack + (this.attack - this.beforeFetchAttack);
-        this.opponentUserName = data.opponentUserName;
-        this.opponentUserCode = data.opponentUserCode;
-        this.opponentUserBatankyu = data.opponentUserBatankyu;
+        this.rivalName = data.rivalName;
+        this.rivalCode = data.rivalCode;
+        this.rivalBatankyu = data.rivalBatankyu;
         this.damageNext = data.damage;
-        this.absorbedDamage = this.absorbedDamage + data.absorbedDamage;
-        if (data.opponentUserBoard) {
-          Stage.showOpponentUserBoard(data.opponentUserBoard.split(','));
+        this.absorbedDamage = data.absorbedDamage;
+        if (data.rivalBoard) {
+          Stage.showOpponentUserBoard(data.rivalBoard.split(','));
         }
-        if (this.opponentUserCode) {
-          this.opponentReady = true;
+        if (this.rivalCode) {
+          this.rivalReady = true;
         }
         this.waitingServerResponse = false;
       });
@@ -146,11 +146,11 @@ class Game {
     }
     if (this.onlineBattle) {
       this.fetchClientData();
-      if (!this.opponentReady) {
+      if (!this.rivalReady) {
         PuyoImage.nowLoadingImage.style.display = "block";
         requestAnimationFrame(() => this.loop());
         return false;
-      } else if (this.opponentUserBatankyu) {
+      } else if (this.rivalBatankyu) {
         if (!Player.keyStatus.space) {
           this.youWinImageElement.style.display = "block";
           requestAnimationFrame(() => this.loop());
@@ -165,7 +165,7 @@ class Game {
     if (this.mode == 'start') {
       if (this.imgQueue.length > 0) {
         PuyoImage.nowLoadingImage.style.display = "block";
-      } else if (this.onlineBattle == false || this.opponentReady == true) {
+      } else if (this.onlineBattle == false || this.rivalReady == true) {
         PuyoImage.nowLoadingImage.style.display = "none";
         this.puyosCount = 0;
         this.attack = 0;
@@ -264,7 +264,7 @@ class Game {
       } else {
         this.mode = 'newPuyo';
       }
-      this.penalty = this.penalty + ((this.damageNext - this.absorbedDamage) - this.damage);
+      this.penalty = this.penalty + (this.damageNext - this.damage);
       this.damage = this.damageNext;
     } else if (this.mode == 'gameOver') {
       PuyoImage.prepareBatankyu(this.frame);
@@ -282,3 +282,4 @@ class Game {
     requestAnimationFrame(() => this.loop());
   }
 }
+

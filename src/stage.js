@@ -41,17 +41,17 @@ class Stage {
     this.serverConnectionElement.style.position = "absolute";
     this.serverConnectionElement.style.top = "0px";
     this.serverConnectionElement.style.left = `${this.serverConnectionElementSideMargin}px`;
-    this.opponentUserPuyoWidth = this.serverConnectionElementWidth / Config.stageCols;
-    this.opponentUserPuyoHeight = (this.opponentUserPuyoWidth / Config.puyoImgWidth) * Config.puyoImgHeight;
-    this.opponentUserBoardElement = document.getElementById("opponentUserBoard");
-    this.opponentUserBoardElementWidth = this.serverConnectionElementWidth;
-    this.opponentUserBoardElementHeight = this.opponentUserPuyoHeight * Config.stageRows;
-    this.opponentUserBoardElementSideMargin = this.serverConnectionElementSideMargin;
-    this.opponentUserBoardElement.style.position = "absolute";
-    this.opponentUserBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
-    this.opponentUserBoardElement.style.left = `${this.opponentUserBoardElementSideMargin}px`;
-    this.opponentUserBoardElement.style.width = `${this.opponentUserBoardElementWidth}px`;
-    this.opponentUserBoardElement.style.height = `${this.opponentUserBoardElementHeight}px`;
+    this.rivalPuyoWidth = this.serverConnectionElementWidth / Config.stageCols;
+    this.rivalPuyoHeight = (this.rivalPuyoWidth / Config.puyoImgWidth) * Config.puyoImgHeight;
+    this.rivalBoardElement = document.getElementById("rivalBoard");
+    this.rivalBoardElementWidth = this.serverConnectionElementWidth;
+    this.rivalBoardElementHeight = this.rivalPuyoHeight * Config.stageRows;
+    this.rivalBoardElementSideMargin = this.serverConnectionElementSideMargin;
+    this.rivalBoardElement.style.position = "absolute";
+    this.rivalBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
+    this.rivalBoardElement.style.left = `${this.rivalBoardElementSideMargin}px`;
+    this.rivalBoardElement.style.width = `${this.rivalBoardElementWidth}px`;
+    this.rivalBoardElement.style.height = `${this.rivalBoardElementHeight}px`;
   }
   static start() {
     this.board = [];
@@ -71,36 +71,36 @@ class Stage {
     while (this.stageElement.firstChild) {
       this.stageElement.removeChild(Stage.stageElement.firstChild);
     }
-    while (this.opponentUserBoardElement.firstChild) {
-      this.opponentUserBoardElement.removeChild(this.opponentUserBoardElement.firstChild);
+    while (this.rivalBoardElement.firstChild) {
+      this.rivalBoardElement.removeChild(this.rivalBoardElement.firstChild);
     }
     if (Game.onlineBattle) {
-      this.opponentUserBoardElement.style.display = "block";
-      this.opponentUserBoardElement.style.position = "absolute";
-      this.opponentUserBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
-      this.opponentUserBoardElement.style.left = `${this.stageElementSideMargin - this.opponentUserBoardElementWidth}px`;
+      this.rivalBoardElement.style.display = "block";
+      this.rivalBoardElement.style.position = "absolute";
+      this.rivalBoardElement.style.top = `${this.serverConnectionElement.clientHeight}px`;
+      this.rivalBoardElement.style.left = `${this.stageElementSideMargin - this.rivalBoardElementWidth}px`;
     }
   }
   static showOpponentUserBoard(board) {
-    while (this.opponentUserBoardElement.firstChild) {
-      this.opponentUserBoardElement.removeChild(this.opponentUserBoardElement.firstChild);
+    while (this.rivalBoardElement.firstChild) {
+      this.rivalBoardElement.removeChild(this.rivalBoardElement.firstChild);
     }
-    let opponentUserNameElement = document.createElement("p");
-    opponentUserNameElement.innerHTML = Game.opponentUserName;
-    opponentUserNameElement.style.position = "absolute";
-    opponentUserNameElement.style.top = "0px";
-    opponentUserNameElement.style.left = "0px";
-    this.opponentUserBoardElement.appendChild(opponentUserNameElement);
+    let rivalNameElement = document.createElement("p");
+    rivalNameElement.innerHTML = Game.rivalName;
+    rivalNameElement.style.position = "absolute";
+    rivalNameElement.style.top = "0px";
+    rivalNameElement.style.left = "0px";
+    this.rivalBoardElement.appendChild(rivalNameElement);
     for (let y = 0; y < Config.stageRows; y++) {
       for (let x = 0; x < Config.stageCols; x++) {
         if (board[y * Config.stageCols + x] != 0) {
           let puyo = PuyoImage.getPuyo(parseInt(board[y * Config.stageCols + x]));
           puyo.style.position = 'absolute';
-          puyo.style.top = `${y * this.opponentUserPuyoHeight}px`;
-          puyo.style.left = `${x * this.opponentUserPuyoWidth}px`;
-          puyo.style.width = `${this.opponentUserPuyoWidth}px`;
-          puyo.style.height = `${this.opponentUserPuyoHeight}px`;
-          this.opponentUserBoardElement.appendChild(puyo);
+          puyo.style.top = `${y * this.rivalPuyoHeight}px`;
+          puyo.style.left = `${x * this.rivalPuyoWidth}px`;
+          puyo.style.width = `${this.rivalPuyoWidth}px`;
+          puyo.style.height = `${this.rivalPuyoHeight}px`;
+          this.rivalBoardElement.appendChild(puyo);
         }
       }
     }
